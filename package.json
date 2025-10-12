@@ -23,6 +23,7 @@
     "lucide-react": "^0.545.0",
     "next": "15.5.4",
     "react": "19.1.0",
+    "react-awesome-shapes": "^0.1.6",
     "react-dom": "19.1.0",
     "react-resizable-panels": "^3.0.6",
     "tailwind-merge": "^3.3.1"
