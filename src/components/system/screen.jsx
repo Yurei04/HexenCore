@@ -1,14 +1,14 @@
-import HexSkillTree from "./hexSkill";
+export default function ComputerScreen() {
+  return (
+    <div className="relative w-[31.25rem] h-[31.25rem] flex items-center justify-center">
+      {/* The inner content box (inside the screen) */}
+      <div className="w-[80%] h-[60%] bg-neutral-900 rounded-md z-10 shadow-inner border border-neutral-700" />
 
-
-export default function ComputerScreen () {
-    return (
-        <div className="w-[31.25rem] h-[31.25rem] border-3 border-neutral-950 rounded-sm flex flex-col items-center justify-center p-5 z-100">
-            <div className="w-[29.25rem] h-[29.25rem] border-2 border-neutral-950 z-90">
-                <div className="w-full h-full bg-amber-200 z-80">
-                        hello
-                </div>
-            </div>
-        </div>
-    )
+      {/* The TV/screen image — on top */}
+      <div
+        className="absolute inset-0 bg-[url('/images/screen.png')] bg-cover bg-center pointer-events-none z-20"
+        aria-hidden="true"
+      />
+    </div>
+  );
 }

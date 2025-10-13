@@ -3,6 +3,17 @@
 
 @custom-variant dark (&:is(.dark *));
 
+body {
+  background-image:
+    linear-gradient(rgba(124, 18, 138, 0.7), rgba(166, 21, 218, 0.7)),
+    url("/images/bkg2.png");
+  background-repeat: no-repeat;
+  background-size: cover;
+  background-attachment: fixed;
+  background-position: center;
+}
+
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
