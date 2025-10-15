@@ -1,39 +1,62 @@
-"use client"
+"use client";
 
-import { Button } from "../ui/button";
-import { Label } from "../ui/label";
-import { useState, useEffect } from "react";
+export default function ComputerControls({
+  setMode,
+  typeText,
+  setHasStarted,
+  setEyeSight,
+  setColorblind,
+  setMusic
+}) {
+  return (
+    <div className="flex flex-col gap-2 items-center justify-center">
+      <button
+        onClick={() => {
+          setMode("sleepy");
+          typeText(" Entering Low-Power Mode...");
+          setHasStarted(false);
+          setEyeSight(true);
+        }}
+        className="text-xs border border-purple-500 px-2 py-1 rounded hover:bg-purple-600/40"
+      >
+        Sleep
+      </button>
 
-export default function ComputerControls ({ questionType = "multiple"}) {
+      <button
+        onClick={() => {
+          setMode("colorblind");
+          typeText(" Entering Color Blind Mode...");
+          setHasStarted(false);
+          setColorblind(true);
+        }}
+        className="text-xs border border-purple-500 px-2 py-1 rounded hover:bg-purple-600/40"
+      >
+        Color Blind
+      </button>
 
-    const multipleChoice = [
-        { id: "A", label: "Option A"},
-        { id: "B", label: "Option B"},
-        { id: "C", label: "Option C"},
-        { id: "D", label: "Option D"},
-    ];
+      <button
+        onClick={() => {
+          setMode("noMusic");
+          typeText(" Music Shutting Down...");
+          setHasStarted(false);
+          setMusic(true);
+        }}
+        className="text-xs border border-purple-500 px-2 py-1 rounded hover:bg-purple-600/40"
+      >
+        No Music
+      </button>
 
-    const trueOrFalse = [
-        { id: "TRUE", label: "True"},
-        { id: "FALSE", label: "False"},
-    ];
-
-    
-    const [choices, setChoices] = useState(multipleChoice);
-    const [selected, setSelected] = useState(null);
-
-    useEffect(() => {
-
-    })
-
-
-    return (
-        <div className="w-[43.75rem] h-[10.5rem] border-3 border-neutral-950 rounded-sm flex flex-col items-center justify-center p-5 m-6 z-100">
-            <div className="w-[40.75rem] h-[29.25rem] border-2 border-neutral-950 z-90">
-                <div className="w-full h-full items-center justify-evenly flex lg:flex-row sm:flex-col bg-amber-200 p-4">
-                    {choices.map}
-                </div>
-            </div>
-        </div>
-    )
+      <button
+        onClick={() => {
+          setMode("eyeSight");
+          typeText(" Entering Larger Font Mode...");
+          setHasStarted(false);
+          setEyeSight(true);
+        }}
+        className="text-xs border border-purple-500 px-2 py-1 rounded hover:bg-purple-600/40"
+      >
+        EyeSight
+      </button>
+    </div>
+  );
 }
