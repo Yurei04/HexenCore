@@ -1,21 +1,23 @@
+// src/components/system/ComputerControls.jsx
 "use client";
+import { useMode } from "./modeContext";
 
-export default function ComputerControls({
-  setMode,
-  typeText,
-  setHasStarted,
-  setEyeSight,
-  setColorblind,
-  setMusic
-}) {
+export default function ComputerControls({ typeText, setHasStarted, setMode }) {
+  const {
+    toggleSleep,
+    toggleColorblind,
+    toggleMusic,
+    toggleEyeSight,
+  } = useMode();
+
   return (
     <div className="flex flex-col gap-2 items-center justify-center">
       <button
         onClick={() => {
+          toggleSleep();
           setMode("sleepy");
-          typeText(" Entering Low-Power Mode...");
+          typeText("Entering Low-Power Mode...");
           setHasStarted(false);
-          setEyeSight(true);
         }}
         className="text-xs border border-purple-500 px-2 py-1 rounded hover:bg-purple-600/40"
       >
@@ -24,10 +26,10 @@ export default function ComputerControls({
 
       <button
         onClick={() => {
+          toggleColorblind();
           setMode("colorblind");
-          typeText(" Entering Color Blind Mode...");
+          typeText("Entering Color Blind Mode...");
           setHasStarted(false);
-          setColorblind(true);
         }}
         className="text-xs border border-purple-500 px-2 py-1 rounded hover:bg-purple-600/40"
       >
@@ -36,10 +38,10 @@ export default function ComputerControls({
 
       <button
         onClick={() => {
+          toggleMusic();
           setMode("noMusic");
-          typeText(" Music Shutting Down...");
+          typeText("Music Shutting Down...");
           setHasStarted(false);
-          setMusic(true);
         }}
         className="text-xs border border-purple-500 px-2 py-1 rounded hover:bg-purple-600/40"
       >
@@ -48,10 +50,10 @@ export default function ComputerControls({
 
       <button
         onClick={() => {
+          toggleEyeSight();
           setMode("eyeSight");
-          typeText(" Entering Larger Font Mode...");
+          typeText("Entering Larger Font Mode...");
           setHasStarted(false);
-          setEyeSight(true);
         }}
         className="text-xs border border-purple-500 px-2 py-1 rounded hover:bg-purple-600/40"
       >

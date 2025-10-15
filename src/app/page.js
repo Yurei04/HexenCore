@@ -1,6 +1,7 @@
 "use client";
 import ComputerControls from "@/components/system/controls";
 import ComputerMode from "@/components/system/mode";
+import { ModeProvider } from "@/components/system/modeContext";
 import ComputerScreen from "@/components/system/screen";
 import SystemInfo from "@/components/system/systemInfo";
 import TimeAndDate from "@/components/system/time";
@@ -19,10 +20,11 @@ export default function Home() {
   const [results, setResults] = useState([]);
   const [startTime, setStartTime] = useState(null);
   const [answerTimes, setAnswerTimes] = useState([]);
+  const [evaluation, setEvaluation] = useState([]);
+  const [sleep, setSleep] = useState(false);
+  const [eyeSight, setEyesSight] = useState(false);
   const [music, setMusic] = useState(false);
   const [colorblind, setColorblind] = useState(false);
-  const [evaluation, setEvaluation] = useState([]);
-  const [eyeSight, setEyesSight] = useState(false);
 
   const dialogues = {
     intro: [
@@ -121,47 +123,62 @@ export default function Home() {
     }, 2000);
   };
 
-  const timeHandler = (time) => {
-    setTime(time);
-  }
+  const sleepStart = () => {
+    setSleep(true);
+  // Optional: logic when sleep mode activates
+  };
+
+  const colorblindStart = () => {
+    setColorblind(true);
+    // Optional: logic when colorblind mode activates
+  };
+
+  const noMusicStart = () => {
+    setMusic(true);
+    // Optional: logic to mute background music
+  };
+
+  const eyeSightStart = () => {
+    setEyesSight(true);
+    // Optional: logic to increase font size
+  };
 
   const handleAnswer = (answer) => {
-  // record time taken
-  const endTime = Date.now();
-  if (startTime) {
-    const timeTaken = (endTime - startTime) / 1000; 
-    setAnswerTimes((prev) => [...prev, timeTaken]);
-  }
-
-  setSelectedAnswer(answer);
-
-  if (answer === currentQuestion.answer) {
-    setCorrectedAnswers((prev) => prev + 1);
-  }
-
-  setMode("talking");
-  typeText(" Processing your response...");
-
-  setTimeout(() => {
-    if (currentQuestionIndex < questions.length - 1) {
-      setCurrentQuestionIndex((prev) => prev + 1);
-      setSelectedAnswer(null);
-    } else {
-      // compute average time
-      const totalTime = answerTimes.reduce((a, b) => a + b, 0);
-      const averageTime = totalTime / answerTimes.length;
-
-      typeText(` Assessment complete. Well done! 
-      Average time per question: ${averageTime.toFixed(2)}s`);
-
-      setMode("idle");
-      setCurrentQuestionIndex(0);
-      setCorrectedAnswers(0);
-      setHasStarted(false);
-      setAnswerTimes([]); 
+    const endTime = Date.now();
+    if (startTime) {
+      const timeTaken = (endTime - startTime) / 1000; 
+      setAnswerTimes((prev) => [...prev, timeTaken]);
     }
-  }, 2000);
-};
+
+    setSelectedAnswer(answer);
+
+    if (answer === currentQuestion.answer) {
+      setCorrectedAnswers((prev) => prev + 1);
+    }
+
+    setMode("talking");
+    typeText(" Processing your response...");
+
+    setTimeout(() => {
+      if (currentQuestionIndex < questions.length - 1) {
+        setCurrentQuestionIndex((prev) => prev + 1);
+        setSelectedAnswer(null);
+      } else {
+        // compute average time
+        const totalTime = answerTimes.reduce((a, b) => a + b, 0);
+        const averageTime = totalTime / answerTimes.length;
+
+        typeText(` Assessment complete. Well done! 
+        Average time per question: ${averageTime.toFixed(2)}s`);
+
+        setMode("idle");
+        setCurrentQuestionIndex(0);
+        setCorrectedAnswers(0);
+        setHasStarted(false);
+        setAnswerTimes([]); 
+      }
+    }, 2000);
+  };
 
   const getFaceSrc = () => {
     switch (mode) {
@@ -212,14 +229,13 @@ export default function Home() {
 
       {/* --- BOTTOM LEFT (CONTROL) --- */}
       <div className="absolute w-[12%] h-[20%] top-[45%] left-[18%] bg-black/70 rounded-sm text-white">
-        <ComputerControls
-          setMode={setMode}
-          typeText={typeText}
-          setHasStarted={setHasStarted}
-          setEyeSight={setEyesSight}
-          setColorblind={setColorblind}
-          setMusic={setMusic}
-        />
+        <ModeProvider>
+            <ComputerControls
+              setMode={setMode}
+              typeText={typeText}
+              setHasStarted={setHasStarted}
+            />
+        </ModeProvider>
       </div>
 
       {/* --- TOP RIGHT (MODE STATUS) --- */}

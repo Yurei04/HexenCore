@@ -13,6 +13,22 @@ body {
   background-position: center;
 }
 
+body.sleep-mode {
+  filter: brightness(0.5) contrast(0.8);
+}
+
+body.colorblind-mode img {
+  filter: grayscale(80%) contrast(1.2);
+}
+
+body.eyeSight-mode {
+  font-size: 1.25rem; /* slightly bigger */
+}
+
+body.colorblind-mode, body.sleep-mode {
+  transition: all 0.3s ease;
+}
+
 
 @theme inline {
   --color-background: var(--background);
