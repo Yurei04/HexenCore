@@ -7,6 +7,9 @@ import SystemInfo from "@/components/system/systemInfo";
 import TimeAndDate from "@/components/system/time";
 import Image from "next/image";
 import { useState, useEffect } from "react";
+import questionsData from "@/../public/data/questions.json";
+import DialogScreen from "@/components/system/hexSkill";
+
 
 export default function Home() {
   const [mode, setMode] = useState("booting");
@@ -19,10 +22,27 @@ export default function Home() {
   const [correctAnswers, setCorrectedAnswers] = useState(0)
   const [results, setResults] = useState([]);
   const [startTime, setStartTime] = useState(null);
-
-
+  const [allSubjects, setAllSubjects] = useState({});
+  const [chosenSubjects, setChosenSubjects] = useState([]);
+  const [questions, setQuestions] = useState([]);
   const [answerTimes, setAnswerTimes] = useState([]);
   const [isIntroPlaying, setIsIntroPlaying] = useState(true);
+  const [showDialog, setShowDialog] = useState(false);
+  const [showSkillTree, setShowSkillTree] = useState(false);
+  const [testStarted, setTestStarted] = useState(false);
+  const [testFinished, setTestFinished] = useState(false);
+
+
+  const subjects = ["Math", "Science", "History", "Tech", "Art", "Language"];
+  const [selected, setSelected] = useState([]);
+
+  const toggleSubject = (subject) => {
+    if (selected.includes(subject)) {
+      setSelected(selected.filter((s) => s !== subject));
+    } else if (selected.length < 3) {
+      setSelected([...selected, subject]);
+    }
+  };
   
   const dialogues = {
     intro: [
@@ -37,25 +57,35 @@ export default function Home() {
       " Thank you and have a good day:)"
     ]
   };
+const handleSubjectSelect = (subject) => {
+    setChosenSubjects((prev) =>
+      prev.includes(subject)
+        ? prev.filter((s) => s !== subject)
+        : prev.length < 3
+        ? [...prev, subject]
+        : prev
+    );
+  };
 
-  const questions = [
-    {
-      type: "multiple",
-      question: "What is the capital of France?",
-      options: ["Paris", "London", "Rome", "Berlin"],
-      answer: "Paris",
-    },
-    {
-      type: "torf",
-      question: "The sun rises in the west.",
-      answer: "FALSE",
-    },
-    {
-      type: "yesno",
-      question: "Do you like AI?",
-      answer: "YES",
-    },
-  ];
+  // 👇 called when user confirms subject choices
+  const handleSkillConfirm = () => {
+    const selectedQuestions = chosenSubjects.flatMap((subj) => {
+      const subjectQs = allSubjects[subj];
+      return subjectQs.sort(() => 0.5 - Math.random()).slice(0, 6);
+    });
+
+    setQuestions(selectedQuestions);
+    setMode("talking");
+    typeText("Excellent choices. Preparing your custom assessment...");
+    setTimeout(() => {
+      setMode("questioningMultiple");
+      setHasStarted(true);
+    }, 2000);
+  };
+  
+  useEffect(() => {
+    setAllSubjects(questionsData.subjects);
+  }, []);
 
   const currentQuestion = questions[currentQuestionIndex];
 
@@ -88,25 +118,32 @@ export default function Home() {
   }, []);
 
   useEffect(() => {
-  if (mode === "booting") {
-    
-    let i = 0;
-    const runIntro = () => {
-      if (i < dialogues.intro.length) {
-        typeText(dialogues.intro[i], () => {
-          i++;
-          setTimeout(runIntro, 1000);
-        });
-        
-      } else {
-        setMode("idle");
-        setIsIntroPlaying(false)
-      }
-    };
+    if (mode === "booting") {
+      let i = 0;
+
+      const runIntro = () => {
+        if (i < dialogues.intro.length) {
+          typeText(dialogues.intro[i], () => {
+            i++;
+            setTimeout(runIntro, 1000);
+          });
+        } else {
+          // After intro finishes, go to skilltree once
+          setTimeout(() => {
+            setMode("skilltree");
+            setIsIntroPlaying(false);
+            setShowSkillTree(true);
+            typeText(" Access granted. Please select up to three skill modules to begin your assessment.");
+          }, 1000);
+        }
+      };
+
       runIntro();
-      
-  }
-  }, [mode, dialogues.intro]);
+    }
+    // Only run when booting starts, not on every mode change
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [mode === "booting"]);
+
 
 
   useEffect(() => {
@@ -117,13 +154,16 @@ export default function Home() {
   }, [currentQuestionIndex]);
 
   const handleStart = () => {
-    setHasStarted(true);
-    setMode("talking");
-    typeText(" Let's begin your assessment...");
+    if (questions.length === 0) return typeText("No questions loaded yet.");
+      setHasStarted(true);
+      setCurrentQuestionIndex(0);
+      setMode("talking");
+      typeText(" Let's begin your assessment...");
     setTimeout(() => {
       setMode("questioningMultiple");
     }, 2000);
   };
+
 
   const handleAnswer = (answer) => {
     const endTime = Date.now();
@@ -158,6 +198,7 @@ export default function Home() {
         setCorrectedAnswers(0);
         setHasStarted(false);
         setAnswerTimes([]); 
+        setTestFinished(true);
       }
     }, 2000);
   };
@@ -165,6 +206,8 @@ export default function Home() {
   const getFaceSrc = () => {
     switch (mode) {
       case "sleepy":
+        return "/images/sleeping.png";
+      case "ready":
         return "/images/sleeping.png";
       case "talking":
         return "/images/idle-face.png";
@@ -214,6 +257,41 @@ export default function Home() {
         />
       </div>
 
+       <DialogScreen show={showSkillTree}>
+          <h2 className="text-xl font-semibold mb-4">Select up to 3 Subjects</h2>
+          <div className="grid grid-cols-2 gap-4">
+            {subjects.map((subj) => (
+              <button
+                key={subj}
+                onClick={() => toggleSubject(subj)}
+                className={`px-4 py-2 rounded-md border transition-all ${
+                  selected.includes(subj)
+                    ? "bg-purple-500 border-purple-400"
+                    : "bg-transparent border-white/40 hover:border-purple-300"
+                }`}
+              >
+                {subj}
+              </button>
+            ))}
+          </div>
+
+          <p className="mt-4 text-sm text-gray-300">{selected.length}/3 selected</p>
+
+          <button
+            onClick={() => {
+              setTestStarted(false);
+              setShowSkillTree(false);
+              setMode("idle");
+              typeText("  Subjects confirmed.");
+            }}
+            disabled={selected.length < 3}
+            className="mt-6 px-6 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg disabled:bg-gray-600"
+          >
+            Confirm Selection
+          </button>
+        </DialogScreen>
+
+
       {/* --- TOP LEFT (DATE/TIME) --- */}
       <div className="absolute w-[17%] h-[22%] top-[12%] left-[16%] bg-black/70 rounded-sm flex flex-col items-center justify-center text-white text-xs">
         <TimeAndDate />
@@ -237,12 +315,24 @@ export default function Home() {
       </div>
 
       {/* --- BOTTOM RIGHT (SYSTEM INFO) --- */}
-      <div className="absolute w-[12%] h-[20%] top-[43%] right-[18%] bg-black/70 rounded-sm flex items-center justify-center text-white text-xs">
+      <div className="absolute w-[12%] h-[20%] top-[43%] right-[18%] bg-black/70 rounded-sm flex flex-col gap-1 items-center justify-center text-white text-xs">
         <SystemInfo
           hasStarted={hasStarted}
           currentQuestionIndex={currentQuestionIndex}
           questions={questions}
         />
+        <button
+          onClick={() => setShowSkillTree(true)}
+          disabled={testStarted && !testFinished}
+          className={`px-4 py-2 rounded-md text-white transition-all ${
+            testStarted && !testFinished
+              ? "bg-gray-600 cursor-not-allowed"
+              : "bg-purple-600 hover:bg-purple-700"
+          }`}
+        >
+          Open Skill Tree
+        </button>
+
       </div>
     </div>
   );

@@ -1,0 +1,43 @@
+{
+  "subjects": {
+    "Geography": [
+      {
+        "type": "multiple",
+        "question": "What is the capital of France?",
+        "options": ["Paris", "London", "Rome", "Berlin"],
+        "answer": "Paris"
+      },
+      {
+        "type": "multiple",
+        "question": "Which continent is the Sahara Desert located in?",
+        "options": ["Africa", "Asia", "Australia", "Europe"],
+        "answer": "Africa"
+      }
+    ],
+    "Science": [
+      {
+        "type": "torf",
+        "question": "Water boils at 100°C at sea level.",
+        "answer": "TRUE"
+      },
+      {
+        "type": "multiple",
+        "question": "Which planet is known as the Red Planet?",
+        "options": ["Venus", "Earth", "Mars", "Jupiter"],
+        "answer": "Mars"
+      }
+    ],
+    "Technology": [
+      {
+        "type": "yesno",
+        "question": "Do computers use binary code?",
+        "answer": "YES"
+      },
+      {
+        "type": "torf",
+        "question": "HTML stands for Hyper Trainer Markup Language.",
+        "answer": "FALSE"
+      }
+    ]
+  }
+}
