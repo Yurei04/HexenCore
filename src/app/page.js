@@ -126,26 +126,6 @@ export default function Home() {
     }, 2000);
   };
 
-  const sleepStart = () => {
-    setSleep(true);
-  // Optional: logic when sleep mode activates
-  };
-
-  const colorblindStart = () => {
-    setColorblind(true);
-    // Optional: logic when colorblind mode activates
-  };
-
-  const noMusicStart = () => {
-    setMusic(true);
-    // Optional: logic to mute background music
-  };
-
-  const eyeSightStart = () => {
-    setEyesSight(true);
-    // Optional: logic to increase font size
-  };
-
   const handleAnswer = (answer) => {
     const endTime = Date.now();
     if (startTime) {
@@ -219,15 +199,6 @@ export default function Home() {
           ${mode === "colorblind" ? "filter-colorblind" : ""}`}
       />
 
-      {/* Controls */}
-      <div className="absolute bottom-5 z-30">
-        <ComputerControls
-          typeText={typeText}
-          setHasStarted={setHasStarted}
-          setMode={setMode}
-        />
-      </div>
-
       {/* --- MAIN SCREEN --- */}
       <div className="absolute w-[25%] h-[40%] top-[16%] left-[37%] z-10 bg-black/80 rounded-sm text-center flex flex-col items-center justify-center p-4  overflow-hidden">
         <ComputerScreen
@@ -251,13 +222,11 @@ export default function Home() {
 
       {/* --- BOTTOM LEFT (CONTROL) --- */}
       <div className="absolute w-[12%] h-[20%] top-[45%] left-[18%] bg-black/70 rounded-sm text-white">
-        <ModeProvider>
             <ComputerControls
               setMode={setMode}
               typeText={typeText}
               setHasStarted={setHasStarted}
             />
-        </ModeProvider>
       </div>
 
       {/* --- TOP RIGHT (MODE STATUS) --- */}

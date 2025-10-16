@@ -19,7 +19,12 @@ export default function ComputerControls({ typeText, setHasStarted, setMode }) {
           setMode("colorblind");
           typeText(" Entering Color Blind Mode...");
           setHasStarted(false);
+          setTimeout(() => {
+            setMode("idle");
+            typeText("System ready. Press Start to begin test.");
+          }, 3000);
         }}
+        
         className="text-xs border border-purple-500 px-2 py-1 rounded hover:bg-purple-600/40"
       >
         Color Blind
@@ -30,6 +35,10 @@ export default function ComputerControls({ typeText, setHasStarted, setMode }) {
           setMode("default");
           typeText(" Returning to Normal Mode...");
           setHasStarted(true);
+          setTimeout(() => {
+            setMode("idle");
+            typeText("System ready. Press Start to begin test.");
+          }, 3000);
         }}
         className="text-xs border border-purple-500 px-2 py-1 rounded hover:bg-purple-600/40"
       >
