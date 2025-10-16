@@ -19,13 +19,11 @@ export default function Home() {
   const [correctAnswers, setCorrectedAnswers] = useState(0)
   const [results, setResults] = useState([]);
   const [startTime, setStartTime] = useState(null);
-  const [answerTimes, setAnswerTimes] = useState([]);
-  const [evaluation, setEvaluation] = useState([]);
-  const [sleep, setSleep] = useState(false);
-  const [eyeSight, setEyesSight] = useState(false);
-  const [music, setMusic] = useState(false);
-  const [colorblind, setColorblind] = useState(false);
 
+
+  const [answerTimes, setAnswerTimes] = useState([]);
+  const [isIntroPlaying, setIsIntroPlaying] = useState(true);
+  
   const dialogues = {
     intro: [
       " Initializing neural link...",
@@ -61,9 +59,6 @@ export default function Home() {
 
   const currentQuestion = questions[currentQuestionIndex];
 
-
-  
-
   const typeText = (text, onComplete) => {
     setIsTyping(true);
     setDisplayText("");
@@ -94,6 +89,7 @@ export default function Home() {
 
   useEffect(() => {
   if (mode === "booting") {
+    
     let i = 0;
     const runIntro = () => {
       if (i < dialogues.intro.length) {
@@ -101,12 +97,15 @@ export default function Home() {
           i++;
           setTimeout(runIntro, 1000);
         });
+        
       } else {
         setMode("idle");
+        setIsIntroPlaying(false)
       }
     };
       runIntro();
-    }
+      
+  }
   }, [mode, dialogues.intro]);
 
 
@@ -222,11 +221,14 @@ export default function Home() {
 
       {/* --- BOTTOM LEFT (CONTROL) --- */}
       <div className="absolute w-[12%] h-[20%] top-[45%] left-[18%] bg-black/70 rounded-sm text-white">
-            <ComputerControls
-              setMode={setMode}
-              typeText={typeText}
-              setHasStarted={setHasStarted}
-            />
+          <ComputerControls
+            typeText={typeText}
+            setHasStarted={setHasStarted}
+            hasStarted={hasStarted}
+            mode={mode}
+            setMode={setMode}
+            isIntro={isIntroPlaying}
+          />
       </div>
 
       {/* --- TOP RIGHT (MODE STATUS) --- */}
