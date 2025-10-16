@@ -13,21 +13,18 @@ body {
   background-position: center;
 }
 
-body.sleep-mode {
-  filter: brightness(0.5) contrast(0.8);
+/* Sleep Mode — dim and soft */
+.filter-sleep {
+  filter: brightness(0.45) saturate(0.6) contrast(0.9);
+  transition: filter 0.4s ease;
 }
 
-body.colorblind-mode img {
-  filter: grayscale(80%) contrast(1.2);
+/* Colorblind Mode — enhance clarity, reduce confusing hues */
+.filter-colorblind {
+  filter: saturate(1.2) contrast(1.1) brightness(1.05);
+  transition: filter 0.4s ease;
 }
 
-body.eyeSight-mode {
-  font-size: 1.25rem; /* slightly bigger */
-}
-
-body.colorblind-mode, body.sleep-mode {
-  transition: all 0.3s ease;
-}
 
 
 @theme inline {

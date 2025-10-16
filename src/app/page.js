@@ -61,6 +61,9 @@ export default function Home() {
 
   const currentQuestion = questions[currentQuestionIndex];
 
+
+  
+
   const typeText = (text, onComplete) => {
     setIsTyping(true);
     setDisplayText("");
@@ -197,14 +200,33 @@ export default function Home() {
 
   return (
     <div className="relative w-full h-screen flex items-center justify-center overflow-hidden ">
-      {/* Frame */}
+      {/* Background */}
+      <div
+        className={`absolute inset-0 bg-cover bg-center transition-all duration-500
+          ${mode === "sleepy" ? "filter-sleep" : ""}
+          ${mode === "colorblind" ? "filter-colorblind" : ""}`}
+        style={{ backgroundImage: `url('/images/bkg4.png')` }}
+      />
+
+      {/* Foreground Image */}
       <Image
         src="/images/screenMain1NoBkg.png"
         alt="Main Computer Interface"
         fill
-        className="object-contain z-20 pointer-events-none"
         priority
+        className={`object-contain z-20 pointer-events-none transition-all duration-500
+          ${mode === "sleepy" ? "filter-sleep" : ""}
+          ${mode === "colorblind" ? "filter-colorblind" : ""}`}
       />
+
+      {/* Controls */}
+      <div className="absolute bottom-5 z-30">
+        <ComputerControls
+          typeText={typeText}
+          setHasStarted={setHasStarted}
+          setMode={setMode}
+        />
+      </div>
 
       {/* --- MAIN SCREEN --- */}
       <div className="absolute w-[25%] h-[40%] top-[16%] left-[37%] z-10 bg-black/80 rounded-sm text-center flex flex-col items-center justify-center p-4  overflow-hidden">
