@@ -1,0 +1,10 @@
+{
+  "hello": "Hello there! How can I assist you today?",
+  "hi": "Hi! Nice to see you again. What would you like to talk about?",
+  "how are you": "I'm just a bunch of code, but I'm running smoothly!",
+  "who are you": "I’m Hex, your onboard AI assistant.",
+  "what can you do": "I can answer your questions, give guidance, and assist with tests or tasks inside this system.",
+  "start test": "Initializing test sequence... Please wait.",
+  "thank you": "You're very welcome!",
+  "bye": "Goodbye! Shutting down chat protocols."
+}

@@ -5,9 +5,12 @@ import ComputerScreen from "@/components/system/screen";
 import SystemInfo from "@/components/system/systemInfo";
 import TimeAndDate from "@/components/system/time";
 import Image from "next/image";
-import { useState, useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import questionsData from "@/../public/data/questions.json";
 import DialogScreen from "@/components/system/hexSkill";
+import { Input } from "@/components/ui/input";
+import chatResponses from "@/../public/data/chatResponses.json";
+import HexChat from "@/components/system/hexChat";
 
 export default function Home() {
   const [mode, setMode] = useState("booting");
@@ -31,6 +34,9 @@ export default function Home() {
   const [testFinished, setTestFinished] = useState(false);
   const [isIntroPlaying, setIsIntroPlaying] = useState(true);
 
+  const [chatStarted, setChatStarted] = useState(false);
+  const [messages, setMessages] = useState([]);
+  
   const fallbackSubjects = ["Math", "Science", "History", "Tech", "Art", "Language"];
   const subjectsFromData =
     allSubjects && Object.keys(allSubjects).length > 0 ? Object.keys(allSubjects) : fallbackSubjects;
@@ -43,6 +49,26 @@ export default function Home() {
       " When you’re ready, we can begin.",
     ],
   };
+
+
+    const toggleChatMode = () => {
+      if (testStarted) {
+        alert("You cannot activate the chatbot during test mode.");
+        return;
+      }
+      setChatStarted((prev) => !prev);
+    };
+
+    // --- Toggle Test Mode ---
+    const toggleTestMode = () => {
+      if (chatStarted) {
+        alert("You cannot start the test while chatbot mode is active.");
+        return;
+      }
+      setTestStarted((prev) => !prev);
+    };
+
+  
 
   // -------------------------
   // Generic typewriter used for two contexts:
@@ -147,9 +173,7 @@ export default function Home() {
         });
       } else {
         setTimeout(() => {
-          setMode("skilltree");
           setIsIntroPlaying(false);
-          setShowSkillTree(true);
           typeText(" Access granted. Please select up to three skill modules to begin your assessment.", "message");
         }, 700);
       }
@@ -163,6 +187,14 @@ export default function Home() {
     const flicker = setInterval(() => setStaticOn((p) => !p), 200);
     return () => clearInterval(flicker);
   }, []);
+
+  const [booting, setBooting] = React.useState(true);
+
+  React.useEffect(() => {
+    const timer = setTimeout(() => setBooting(false), 6000);
+    return () => clearTimeout(timer);
+  }, []);
+
 
   // -------------------------
   // QUESTION FLOW SEQUENCE
@@ -260,6 +292,20 @@ export default function Home() {
     });
   };
 
+  const handleSendMessage = (msg) => {
+    const lowerMsg = msg.toLowerCase().trim();
+
+    // Get response from JSON DB
+    const botReply = chatResponses[lowerMsg] || "I'm not sure how to respond to that yet.";
+
+    // Update message history
+    setMessages((prev) => [
+      ...prev,
+      { sender: "user", text: msg },
+      { sender: "bot", text: botReply }
+    ]);
+  };
+
   const getFaceSrc = () => {
     switch (mode) {
       case "sleepy":
@@ -289,7 +335,7 @@ export default function Home() {
 
       {/* Foreground Image */}
       <Image
-        src="/images/screenMain1NoBkg.png"
+        src="/images/screenMain1NoBkgWChat.png"
         alt="Main Computer Interface"
         fill
         priority
@@ -312,6 +358,8 @@ export default function Home() {
           currentQuestion={currentQuestion}
           handleAnswer={handleAnswer}
           selectedAnswer={selectedAnswer}
+          messages={messages}
+          chatStarted={chatStarted}
         />
       </div>
 
@@ -373,21 +421,99 @@ export default function Home() {
       </div>
 
       {/* --- BOTTOM RIGHT (SYSTEM INFO) --- */}
-      <div className="absolute w-[12%] h-[20%] top-[43%] right-[18%] bg-black/70 rounded-sm flex flex-col gap-1 items-center justify-center text-white text-xs">
-        <SystemInfo hasStarted={hasStarted} currentQuestionIndex={currentQuestionIndex} questions={questions} />
-        <button
-          onClick={() => setShowSkillTree(true)}
-          disabled={testStarted && !testFinished}
-          className={`px-2 py-1 text-xs rounded-md font-medium text-white transition-all border cursor-pointer ${
-            testStarted && !testFinished
-              ? "bg-gray-800 border-gray-700 text-gray-500 cursor-not-allowed"
-              : "bg-purple-800 border-purple-500 hover:bg-purple-700 hover:border-purple-400"
-          }`}
-        >
-          Open Skill Tree
-        </button>
+        <div className="absolute w-[12%] h-[20%] top-[43%] right-[18%] bg-black/70 rounded-sm flex flex-col gap-1 items-center justify-center text-white text-xs">
+          <SystemInfo
+            hasStarted={hasStarted}
+            currentQuestionIndex={currentQuestionIndex}
+            questions={questions}
+            mode={
+              booting
+                ? "booting"
+                : chatStarted
+                ? "chatting"
+                : hasStarted
+                ? "testing"
+                : "idle"
+            }
+          />
 
+          {/* --- Skill Tree Button --- */}
+          <button
+            onClick={() => setShowSkillTree(true)}
+            disabled={booting || (testStarted && !testFinished) || chatStarted}
+            className={`px-2 py-1 text-xs rounded-md font-medium text-white transition-all border cursor-pointer ${
+              booting || (testStarted && !testFinished) || chatStarted
+                ? "bg-gray-800 border-gray-700 text-gray-500 cursor-not-allowed"
+                : "bg-purple-800 border-purple-500 hover:bg-purple-700 hover:border-purple-400"
+            }`}
+          >
+            Open Skill Tree
+          </button>
+
+          {/* --- Chatbot Button --- */}
+          <button
+            onClick={() => {
+              if (testStarted && !testFinished) {
+                alert("You cannot start the chatbot during test mode.");
+                return;
+              }
+              setChatStarted((prev) => !prev);
+            }}
+            disabled={booting || (testStarted && !testFinished)}
+            className={`px-2 py-1 text-xs rounded-md font-medium text-white transition-all border cursor-pointer ${
+              booting || (testStarted && !testFinished)
+                ? "bg-gray-800 border-gray-700 text-gray-500 cursor-not-allowed"
+                : chatStarted
+                ? "bg-pink-800 border-pink-500 hover:bg-pink-700 hover:border-pink-400"
+                : "bg-purple-800 border-purple-500 hover:bg-purple-700 hover:border-purple-400"
+            }`}
+          >
+            {chatStarted ? "End Chatbot" : "Start Chatbot"}
+          </button>
+        </div>
+
+
+
+      {/* --- CENTER DOWN (CHAT) --- */}
+      <div className="absolute w-[35%] h-[10%] top-[75%] bg-black/70 rounded-sm flex items-center justify-center text-white text-xs">
+        <form
+          onSubmit={(e) => {
+            e.preventDefault();
+            // don't submit if chat isn't active
+            if (!chatStarted) return;
+            const input = e.target.elements.chatInput;
+            const value = input.value.trim();
+            if (value) {
+              handleSendMessage(value);
+              input.value = "";
+            }
+          }}
+          className="w-10/12 flex items-center gap-2"
+        >
+          <Input
+            name="chatInput"
+            placeholder={chatStarted ? "Type your message..." : "Chat disabled — start the chatbot to enable input"}
+            disabled={!chatStarted}
+            aria-disabled={!chatStarted}
+            className={`flex-1 text-white bg-transparent border-purple-500/40 focus:border-pink-400 focus:ring-0
+              ${!chatStarted ? "cursor-not-allowed text-gray-400 placeholder:text-gray-500" : ""}`}
+          />
+          <button
+            type="submit"
+            disabled={!chatStarted}
+            aria-disabled={!chatStarted}
+            title={chatStarted ? "Send message" : "Chat disabled"}
+            className={`px-3 py-1 rounded-md text-xs font-semibold transition-all border
+              ${chatStarted
+                ? "bg-purple-700 hover:bg-purple-600 border-purple-400 text-white"
+                : "bg-gray-800 border-gray-700 text-gray-500 cursor-not-allowed"}`}
+          >
+            Send
+          </button>
+        </form>
       </div>
+
+
     </div>
   );
 }
