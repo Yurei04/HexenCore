@@ -1,7 +1,6 @@
 "use client";
 import ComputerControls from "@/components/system/controls";
 import ComputerMode from "@/components/system/mode";
-import { ModeProvider } from "@/components/system/modeContext";
 import ComputerScreen from "@/components/system/screen";
 import SystemInfo from "@/components/system/systemInfo";
 import TimeAndDate from "@/components/system/time";
@@ -12,26 +11,26 @@ import DialogScreen from "@/components/system/hexSkill";
 
 export default function Home() {
   const [mode, setMode] = useState("booting");
-  const [displayText, setDisplayText] = useState("");
-  const [isTyping, setIsTyping] = useState(false);
+  const [displayText, setDisplayText] = useState("");       // for system messages (Processing, prepare msg, results)
+  const [questionText, setQuestionText] = useState("");     // for typed question text (separate)
+  const [isTyping, setIsTyping] = useState(false);          // true while any typeText is running
   const [staticOn, setStaticOn] = useState(true);
+
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
   const [selectedAnswer, setSelectedAnswer] = useState(null);
   const [hasStarted, setHasStarted] = useState(false);
   const [correctAnswers, setCorrectedAnswers] = useState(0);
-  const [results, setResults] = useState([]);
-  const [startTime, setStartTime] = useState(null);
-  const [allSubjects, setAllSubjects] = useState({}); // object keyed by subject name
-  const [chosenSubjects, setChosenSubjects] = useState([]); // single source of truth for selected subjects
   const [questions, setQuestions] = useState([]);
   const [answerTimes, setAnswerTimes] = useState([]);
-  const [isIntroPlaying, setIsIntroPlaying] = useState(true);
-  const [showDialog, setShowDialog] = useState(false);
+  const [startTime, setStartTime] = useState(null);
+
+  const [allSubjects, setAllSubjects] = useState({});
+  const [chosenSubjects, setChosenSubjects] = useState([]);
   const [showSkillTree, setShowSkillTree] = useState(false);
   const [testStarted, setTestStarted] = useState(false);
   const [testFinished, setTestFinished] = useState(false);
+  const [isIntroPlaying, setIsIntroPlaying] = useState(true);
 
-  // fallback subjects if JSON hasn't loaded yet
   const fallbackSubjects = ["Math", "Science", "History", "Tech", "Art", "Language"];
   const subjectsFromData =
     allSubjects && Object.keys(allSubjects).length > 0 ? Object.keys(allSubjects) : fallbackSubjects;
@@ -43,52 +42,39 @@ export default function Home() {
       " Hello, I am Core — your AI evaluator assistant.",
       " When you’re ready, we can begin.",
     ],
-
-    closing: [" System Shutting Down...", " Thank you and have a good day:)"],
   };
 
-  // Toggle a subject in chosenSubjects (max 3)
-  const toggleSubject = (subject) => {
-    setChosenSubjects((prev) =>
-      prev.includes(subject) ? prev.filter((s) => s !== subject) : prev.length < 3 ? [...prev, subject] : prev
-    );
+  // -------------------------
+  // Generic typewriter used for two contexts:
+  // - question: writes into questionText
+  // - message: writes into displayText
+  // modeArg: "question" | "message"
+  // -------------------------
+  const typeText = (text, modeArg = "message", onComplete) => {
+    setIsTyping(true);
+    if (modeArg === "question") setQuestionText("");
+    else setDisplayText("");
+
+    let i = 0;
+    const speed = modeArg === "message" ? 28 : 30; // you can tweak speeds separately
+    const interval = setInterval(() => {
+      if (modeArg === "question") {
+        setQuestionText((prev) => prev + text.charAt(i));
+      } else {
+        setDisplayText((prev) => prev + text.charAt(i));
+      }
+      i++;
+      if (i >= text.length) {
+        clearInterval(interval);
+        setIsTyping(false);
+        if (onComplete) onComplete();
+      }
+    }, speed);
   };
 
-  // Confirm selected subjects and prepare questions
-  const handleConfirmSubjects = () => {
-    if (chosenSubjects.length < 1) {
-      typeText(" Please select at least one subject.");
-      return;
-    }
-
-    // prepare questions: up to 6 per selected subject, randomly sampled
-    const selectedQuestions = chosenSubjects.flatMap((subj) => {
-      const subjectQs = allSubjects[subj] || [];
-      // clone array before sorting to avoid mutating source
-      const clone = [...subjectQs];
-      return clone.sort(() => 0.5 - Math.random()).slice(0, 6);
-    });
-
-    if (selectedQuestions.length === 0) {
-      typeText(" No questions found for the selected subjects.");
-      return;
-    }
-
-    setQuestions(selectedQuestions);
-    setShowSkillTree(false);
-    setTestStarted(true);
-    setMode("talking");
-    typeText("Excellent choices. Preparing your custom assessment...");
-    // begin after a short delay so the 'typing' message is visible
-    setTimeout(() => {
-      setMode("questioningMultiple");
-      setHasStarted(true);
-      setCurrentQuestionIndex(0);
-      setStartTime(Date.now());
-    }, 1500);
-  };
-
-  // Load data (try fetch first; fallback to imported JSON)
+  // -------------------------
+  // Load data (fetch with fallback)
+  // -------------------------
   useEffect(() => {
     let mounted = true;
     fetch("/data/questions.json")
@@ -98,117 +84,138 @@ export default function Home() {
       })
       .then((data) => {
         if (!mounted) return;
-        if (data && data.subjects) {
-          setAllSubjects(data.subjects);
-        } else if (questionsData && questionsData.subjects) {
-          // fallback if fetched JSON has different shape
-          setAllSubjects(questionsData.subjects);
-        } else {
-          console.error("Invalid JSON structure from fetch:", data);
-        }
+        if (data && data.subjects) setAllSubjects(data.subjects);
+        else if (questionsData && questionsData.subjects) setAllSubjects(questionsData.subjects);
       })
-      .catch((err) => {
-        // fallback to imported JSON if fetch fails (useful during dev / static builds)
-        if (questionsData && questionsData.subjects) {
-          setAllSubjects(questionsData.subjects);
-        } else {
-          console.error("Error loading question data:", err);
-        }
+      .catch(() => {
+        if (questionsData && questionsData.subjects) setAllSubjects(questionsData.subjects);
       });
-
     return () => {
       mounted = false;
     };
   }, []);
 
-  const currentQuestion = questions[currentQuestionIndex];
-
-  const typeText = (text, onComplete) => {
-    setIsTyping(true);
-    setDisplayText("");
-    let i = 0;
-    const interval = setInterval(() => {
-      setDisplayText((prev) => prev + text.charAt(i));
-      i++;
-      if (i >= text.length) {
-        clearInterval(interval);
-        setIsTyping(false);
-        if (onComplete) onComplete();
-      }
-    }, 40);
+  // -------------------------
+  // Toggle subject and confirm
+  // -------------------------
+  const toggleSubject = (subject) => {
+    setChosenSubjects((prev) =>
+      prev.includes(subject) ? prev.filter((s) => s !== subject) : prev.length < 3 ? [...prev, subject] : prev
+    );
   };
 
-  // Start time when a question flow begins
-  useEffect(() => {
-    if (hasStarted && mode.includes("questioning")) {
-      setStartTime(Date.now());
+  const handleConfirmSubjects = () => {
+    if (chosenSubjects.length < 1) {
+      typeText(" Please select at least one subject.", "message");
+      return;
     }
-  }, [currentQuestionIndex, hasStarted, mode]);
 
-  // static flicker effect
-  useEffect(() => {
-    const flicker = setInterval(() => {
-      setStaticOn((prev) => !prev);
-    }, 200);
-    return () => clearInterval(flicker);
-  }, []);
+    const selectedQuestions = chosenSubjects.flatMap((subj) => {
+      const subjectQs = allSubjects[subj] || [];
+      const clone = [...subjectQs];
+      return clone.sort(() => 0.5 - Math.random()).slice(0, 6);
+    });
 
-  // Boot sequence: run only when mode is booting
+    if (!selectedQuestions.length) {
+      typeText(" No questions found for the selected subjects.", "message");
+      return;
+    }
+
+    setQuestions(selectedQuestions);
+    setShowSkillTree(false);
+    setTestStarted(true);
+    setMode("talking");
+    // Use message typing to show preparing text, then start first question typing
+    typeText("Excellent choices. Preparing your custom assessment...", "message", () => {
+      setCurrentQuestionIndex(0);
+      setHasStarted(true);
+      // the question typing effect runs in the next effect below
+    });
+  };
+
+  // -------------------------
+  // Boot intro sequence
+  // -------------------------
   useEffect(() => {
     if (mode !== "booting") return;
-
     let i = 0;
     const runIntro = () => {
       if (i < dialogues.intro.length) {
-        typeText(dialogues.intro[i], () => {
+        typeText(dialogues.intro[i], "message", () => {
           i++;
-          setTimeout(runIntro, 1000);
+          setTimeout(runIntro, 700);
         });
       } else {
         setTimeout(() => {
           setMode("skilltree");
           setIsIntroPlaying(false);
           setShowSkillTree(true);
-          typeText(" Access granted. Please select up to three skill modules to begin your assessment.");
-        }, 1000);
+          typeText(" Access granted. Please select up to three skill modules to begin your assessment.", "message");
+        }, 700);
       }
     };
-
     runIntro();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mode]);
 
-  // Adjust mode depending on the current question's type
+  // static flicker
   useEffect(() => {
-    if (!currentQuestion) return;
-    if (currentQuestion.type === "multiple") setMode("questioningMultiple");
-    else if (currentQuestion.type === "torf") setMode("questioningTorF");
-    else if (currentQuestion.type === "yesno") setMode("questioningNormal");
-    // include currentQuestionIndex in deps so it reacts when index changes
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [currentQuestionIndex, currentQuestion]);
+    const flicker = setInterval(() => setStaticOn((p) => !p), 200);
+    return () => clearInterval(flicker);
+  }, []);
 
+  // -------------------------
+  // QUESTION FLOW SEQUENCE
+  // When currentQuestion changes (and hasStarted), type the question into questionText.
+  // Only after that typing completes do we set a questioning mode and set startTime.
+  // -------------------------
+  const currentQuestion = questions[currentQuestionIndex];
+
+  useEffect(() => {
+    if (!hasStarted || !currentQuestion) return;
+
+    // clear prior messages and question space, then type the new question
+    setDisplayText("");
+    setQuestionText("");
+    // type question into questionText
+    typeText(currentQuestion.question, "question", () => {
+      // after question is typed, set mode that enables answers
+      if (currentQuestion.type === "multiple") setMode("questioningMultiple");
+      else if (currentQuestion.type === "torf") setMode("questioningTorF");
+      else if (currentQuestion.type === "yesno") setMode("questioningNormal");
+      else setMode("questioningMultiple");
+      setStartTime(Date.now());
+    });
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [currentQuestionIndex, hasStarted, currentQuestion]);
+
+  // -------------------------
+  // handleStart (explicit)
+  // -------------------------
   const handleStart = () => {
     if (questions.length === 0) {
-      typeText(" No questions loaded yet.");
+      typeText(" No questions loaded yet.", "message");
       return;
     }
     setHasStarted(true);
     setCurrentQuestionIndex(0);
     setMode("talking");
-    typeText(" Let's begin your assessment...");
-    setTimeout(() => {
-      setMode("questioningMultiple");
-    }, 2000);
+    typeText(" Let's begin your assessment...", "message", () => {
+      // question effect will pick up and type the first question
+    });
   };
 
+  // -------------------------
+  // handleAnswer: record time, show processing message (typed), then move to next question or results
+  // This uses separate displayText for processing so it doesn't overwrite typed questionText unexpectedly.
+  // -------------------------
   const handleAnswer = (answer) => {
+    if (!currentQuestion) return;
+
     const endTime = Date.now();
     const timeTaken = startTime ? (endTime - startTime) / 1000 : 0;
-
-    // include this answer time immediately
-    const newAnswerTimes = [...answerTimes, timeTaken];
-    setAnswerTimes(newAnswerTimes);
+    // update answerTimes immediately
+    setAnswerTimes((prev) => [...prev, timeTaken]);
 
     setSelectedAnswer(answer);
 
@@ -216,33 +223,41 @@ export default function Home() {
       setCorrectedAnswers((prev) => prev + 1);
     }
 
+    // disable options and type the processing message
     setMode("talking");
-    typeText(" Processing your response...");
+    typeText(" Processing your response...", "message", () => {
+      // after processing message typed, clear it and advance
+      setDisplayText("");
 
-    setTimeout(() => {
       if (currentQuestionIndex < questions.length - 1) {
         setCurrentQuestionIndex((prev) => prev + 1);
         setSelectedAnswer(null);
-        setStartTime(Date.now());
+        // next question will be typed by effect above
       } else {
-        // compute average time using the up-to-date newAnswerTimes
-        const totalTime = newAnswerTimes.reduce((a, b) => a + b, 0);
-        const averageTime = newAnswerTimes.length ? totalTime / newAnswerTimes.length : 0;
+        // compute average using the answerTimes state snapshot
+        // (we pushed current time above with setAnswerTimes; small timing nuance but acceptable)
+        // create a snapshot by combining answerTimes + timeTaken to be safer
+        const snapshot = [...answerTimes, timeTaken];
+        const totalTime = snapshot.reduce((a, b) => a + b, 0);
+        const averageTime = snapshot.length ? totalTime / snapshot.length : 0;
 
+        // final message typed
         typeText(
           ` Assessment complete. Well done!
-Average time per question: ${averageTime.toFixed(2)}s`
+            Average time per question: ${averageTime.toFixed(2)}s`,
+          "message",
+          () => {
+            setMode("idle");
+            setCurrentQuestionIndex(0);
+            setCorrectedAnswers(0);
+            setHasStarted(false);
+            setAnswerTimes([]);
+            setTestFinished(true);
+            setTestStarted(false);
+          }
         );
-
-        setMode("idle");
-        setCurrentQuestionIndex(0);
-        setCorrectedAnswers(0);
-        setHasStarted(false);
-        setAnswerTimes([]);
-        setTestFinished(true);
-        setTestStarted(false);
       }
-    }, 2000);
+    });
   };
 
   const getFaceSrc = () => {
@@ -283,12 +298,13 @@ Average time per question: ${averageTime.toFixed(2)}s`
           ${mode === "colorblind" ? "filter-colorblind" : ""}`}
       />
 
-      {/* --- MAIN SCREEN --- */}
-      <div className="absolute w-[25%] h-[40%] top-[16%] left-[37%] z-10 bg-black/80 rounded-sm text-center flex flex-col items-center justify-center p-4  overflow-hidden">
+      {/* --- MAIN SCREEN (RESTORED POSITION) --- */}
+      <div className="absolute w-[25%] h-[40%] top-[16%] left-[37%] z-10 bg-black/80 rounded-sm text-center flex flex-col items-center justify-center p-4 overflow-hidden">
         <ComputerScreen
           getFaceSrc={getFaceSrc}
           staticOn={staticOn}
           displayText={displayText}
+          questionText={questionText}
           isTyping={isTyping}
           mode={mode}
           hasStarted={hasStarted}
@@ -323,8 +339,6 @@ Average time per question: ${averageTime.toFixed(2)}s`
         <button
           onClick={() => {
             handleConfirmSubjects();
-            // do not override mode to idle here; handleConfirmSubjects manages flow
-            // reset test flags as appropriate
           }}
           disabled={chosenSubjects.length < 1}
           className="mt-6 px-6 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg disabled:bg-gray-600"
@@ -341,7 +355,7 @@ Average time per question: ${averageTime.toFixed(2)}s`
       {/* --- BOTTOM LEFT (CONTROL) --- */}
       <div className="absolute w-[12%] h-[20%] top-[45%] left-[18%] bg-black/70 rounded-sm text-white">
         <ComputerControls
-          typeText={typeText}
+          typeText={(t, m, c) => typeText(t, m, c)}
           setHasStarted={setHasStarted}
           hasStarted={hasStarted}
           mode={mode}
