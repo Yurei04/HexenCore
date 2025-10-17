@@ -1,5 +1,6 @@
 "use client";
 
+import { motion } from "framer-motion";
 import { Button } from "../ui/button";
 
 export default function ComputerControls({
@@ -13,50 +14,57 @@ export default function ComputerControls({
   const isDisabled = hasStarted || isIntro;
 
   const handleModeChange = (newMode, message) => {
-    if (isDisabled) return; 
-
+    if (isDisabled) return;
     setMode(newMode);
     typeText(message);
     setHasStarted(false);
-
   };
-  
 
   return (
-    <div className="flex flex-col gap-1 items-center-safe">
-      <Button
-        onClick={() => handleModeChange("sleepy", "Entering Low-Power Mode...")}
-        disabled={isDisabled}
-        className={`text-xs border border-purple-500 px-2 py-1 rounded hover:bg-purple-600/40 transition ${
-          isDisabled ? "opacity-50 cursor-not-allowed" : "cursor-pointer"
-        }`}
-      >
-        Sleep
-      </Button>
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.6 }}
+      className="relative flex flex-col gap-1.5 items-center px-3 py-2 rounded-lg border border-pink-500/40 bg-gradient-to-b from-[#1a002c]/80 via-[#2a0049]/80 to-[#1a002c]/80 shadow-[0_0_15px_rgba(236,72,153,0.4)] backdrop-blur-sm"
+    >
+      {/* Animated top glow bar */}
+      <div className="absolute top-0 left-0 w-full h-[1.5px] bg-gradient-to-r from-purple-400 via-pink-500 to-purple-400 animate-[pulse_2.5s_infinite]" />
 
-      <Button
-        onClick={() =>
-          handleModeChange("colorblind", "Entering Color Blind Mode...")
-        }
-        disabled={isDisabled}
-        className={`text-xs border border-purple-500 px-2 py-1 rounded hover:bg-purple-600/40 transition ${
-          isDisabled ? "opacity-50 cursor-not-allowed" : "cursor-pointer"
-        }`}
-      >
-        Color Blind
-      </Button>
+      <p className="text-[10px] font-mono text-purple-300 tracking-wider mb-1">
+        SYSTEM CONTROLS
+      </p>
 
-      <Button
-        onClick={() =>
-          handleModeChange("default", "Returning to Normal Mode...")
-        }
-        disabled={isDisabled}
-        className={`text-xs border border-purple-500 px-2 py-1 rounded hover:bg-purple-600/40 transition ${
-          isDisabled ? "opacity-50 cursor-not-allowed" : "cursor-pointer"
-        }`}
-      >
-        Reset
-      </Button>
-    </div>
+      {/* Buttons */}
+      {[
+        { label: "Sleep", mode: "sleepy", msg: " Entering Low-Power Mode..." },
+        {
+          label: "Color Blind",
+          mode: "colorblind",
+          msg: " Entering Color Blind Mode...",
+        },
+        { label: "Reset", mode: "default", msg: " Returning to Normal Mode..." },
+      ].map(({ label, mode: newMode, msg }) => (
+        <motion.div
+          key={label}
+          whileTap={{ scale: 0.95 }}
+          whileHover={{ scale: 1.05 }}
+        >
+          <Button
+            onClick={() => handleModeChange(newMode, msg)}
+            disabled={isDisabled}
+            className={`w-24 text-[10px] font-semibold tracking-wider rounded-md px-1 py-1 border transition-all
+              ${
+                isDisabled
+                  ? "opacity-40 cursor-not-allowed border-purple-600/40 text-purple-400"
+                  : "cursor-pointer border-purple-500/60 hover:border-pink-400 hover:shadow-[0_0_10px_#ec4899]"
+              }
+              bg-transparent text-purple-200 hover:text-pink-200 hover:bg-purple-700/20
+              focus:outline-none focus:ring-1 focus:ring-pink-400/50`}
+          >
+            {label}
+          </Button>
+        </motion.div>
+      ))}
+    </motion.div>
   );
 }

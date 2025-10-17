@@ -317,35 +317,38 @@ export default function Home() {
 
       {/* Skill selection dialog */}
       <DialogScreen show={showSkillTree}>
-        <h2 className="text-xl font-semibold mb-4">Select up to 3 Subjects</h2>
-        <div className="grid grid-cols-2 gap-4">
+        <h2 className="text-xl font-semibold mb-4 text-white tracking-wide">Select up to 3 Subjects</h2>
+
+        <div className="grid grid-cols-2 gap-3">
           {subjectsFromData.map((subj) => (
             <button
               key={subj}
               onClick={() => toggleSubject(subj)}
-              className={`px-4 py-2 rounded-md border transition-all ${
-                chosenSubjects.includes(subj)
-                  ? "bg-purple-500 border-purple-400"
-                  : "bg-transparent border-white/40 hover:border-purple-300"
-              }`}
+              className={`cursor-pointer px-4 py-2 rounded-lg border text-sm font-medium transition-all duration-200
+                ${
+                  chosenSubjects.includes(subj)
+                    ? "bg-gradient-to-r from-purple-600 via-pink-500 to-purple-700 border-pink-400 text-white shadow-[0_0_15px_rgba(255,0,255,0.3)]"
+                    : "bg-gray-800/70 border-gray-600 text-purple-300 hover:bg-gray-700/60 hover:border-pink-400 hover:text-pink-300"
+                }`}
             >
               {subj}
             </button>
           ))}
         </div>
 
-        <p className="mt-4 text-sm text-gray-300">{chosenSubjects.length}/3 selected</p>
+        <p className="mt-3 text-sm text-gray-400 tracking-wide">{chosenSubjects.length}/3 selected</p>
 
         <button
-          onClick={() => {
-            handleConfirmSubjects();
-          }}
+          onClick={handleConfirmSubjects}
           disabled={chosenSubjects.length < 1}
-          className="mt-6 px-6 py-2 bg-green-500 hover:bg-green-600 text-white rounded-lg disabled:bg-gray-600"
+          className="cursor-pointer mt-4 px-6 py-2 rounded-lg text-sm font-semibold bg-gradient-to-r from-purple-600 via-pink-500 to-purple-700 
+                    text-white hover:border-purple-400 hover:brightness-110 disabled:bg-gray-700 transition-all duration-200 shadow-md"
         >
           Confirm Selection
         </button>
       </DialogScreen>
+
+
 
       {/* --- TOP LEFT (DATE/TIME) --- */}
       <div className="absolute w-[17%] h-[22%] top-[12%] left-[16%] bg-black/70 rounded-sm flex flex-col items-center justify-center text-white text-xs">
@@ -375,12 +378,15 @@ export default function Home() {
         <button
           onClick={() => setShowSkillTree(true)}
           disabled={testStarted && !testFinished}
-          className={`px-4 py-2 rounded-md text-white transition-all ${
-            testStarted && !testFinished ? "bg-gray-600 cursor-not-allowed" : "bg-purple-600 hover:bg-purple-700"
+          className={`px-2 py-1 text-xs rounded-md font-medium text-white transition-all border cursor-pointer ${
+            testStarted && !testFinished
+              ? "bg-gray-800 border-gray-700 text-gray-500 cursor-not-allowed"
+              : "bg-purple-800 border-purple-500 hover:bg-purple-700 hover:border-purple-400"
           }`}
         >
           Open Skill Tree
         </button>
+
       </div>
     </div>
   );
