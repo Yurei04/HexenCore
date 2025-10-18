@@ -13,10 +13,10 @@ import chatResponses from "@/../public/data/chatResponses.json";
 import HexChat from "@/components/system/hexChat";
 
 export default function Home() {
-  const [mode, setMode] = useState("booting");
-  const [displayText, setDisplayText] = useState("");       // for system messages (Processing, prepare msg, results)
-  const [questionText, setQuestionText] = useState("");     // for typed question text (separate)
-  const [isTyping, setIsTyping] = useState(false);          // true while any typeText is running
+  const [mode, _setMode] = useState("booting");
+  const [displayText, setDisplayText] = useState("");
+  const [questionText, setQuestionText] = useState("");
+  const [isTyping, setIsTyping] = useState(false);
   const [staticOn, setStaticOn] = useState(true);
 
   const [currentQuestionIndex, setCurrentQuestionIndex] = useState(0);
@@ -36,7 +36,9 @@ export default function Home() {
 
   const [chatStarted, setChatStarted] = useState(false);
   const [messages, setMessages] = useState([]);
-  
+
+  const [booting, setBooting] = React.useState(true);
+
   const fallbackSubjects = ["Math", "Science", "History", "Tech", "Art", "Language"];
   const subjectsFromData =
     allSubjects && Object.keys(allSubjects).length > 0 ? Object.keys(allSubjects) : fallbackSubjects;
@@ -50,39 +52,36 @@ export default function Home() {
     ],
   };
 
+  const setMode = (newMode) => {
+    _setMode((prev) => {
+      if (prev === "sleepy" && newMode !== "default") return prev;
+      return newMode;
+    });
+  };
 
-    const toggleChatMode = () => {
-      if (testStarted) {
-        alert("You cannot activate the chatbot during test mode.");
-        return;
-      }
-      setChatStarted((prev) => !prev);
-    };
+  const toggleChatMode = () => {
+    if (testStarted) {
+      alert(" You cannot activate the chatbot during test mode.");
+      return;
+    }
+    setChatStarted((prev) => !prev);
+  };
 
-    // --- Toggle Test Mode ---
-    const toggleTestMode = () => {
-      if (chatStarted) {
-        alert("You cannot start the test while chatbot mode is active.");
-        return;
-      }
-      setTestStarted((prev) => !prev);
-    };
+  const toggleTestMode = () => {
+    if (chatStarted) {
+      alert(" You cannot start the test while chatbot mode is active.");
+      return;
+    }
+    setTestStarted((prev) => !prev);
+  };
 
-  
-
-  // -------------------------
-  // Generic typewriter used for two contexts:
-  // - question: writes into questionText
-  // - message: writes into displayText
-  // modeArg: "question" | "message"
-  // -------------------------
   const typeText = (text, modeArg = "message", onComplete) => {
     setIsTyping(true);
     if (modeArg === "question") setQuestionText("");
     else setDisplayText("");
 
     let i = 0;
-    const speed = modeArg === "message" ? 28 : 30; // you can tweak speeds separately
+    const speed = modeArg === "message" ? 28 : 30;
     const interval = setInterval(() => {
       if (modeArg === "question") {
         setQuestionText((prev) => prev + text.charAt(i));
@@ -98,9 +97,6 @@ export default function Home() {
     }, speed);
   };
 
-  // -------------------------
-  // Load data (fetch with fallback)
-  // -------------------------
   useEffect(() => {
     let mounted = true;
     fetch("/data/questions.json")
@@ -121,9 +117,6 @@ export default function Home() {
     };
   }, []);
 
-  // -------------------------
-  // Toggle subject and confirm
-  // -------------------------
   const toggleSubject = (subject) => {
     setChosenSubjects((prev) =>
       prev.includes(subject) ? prev.filter((s) => s !== subject) : prev.length < 3 ? [...prev, subject] : prev
@@ -151,17 +144,12 @@ export default function Home() {
     setShowSkillTree(false);
     setTestStarted(true);
     setMode("talking");
-    // Use message typing to show preparing text, then start first question typing
-    typeText("Excellent choices. Preparing your custom assessment...", "message", () => {
+    typeText(" Excellent choices. Preparing your custom assessment...", "message", () => {
       setCurrentQuestionIndex(0);
       setHasStarted(true);
-      // the question typing effect runs in the next effect below
     });
   };
 
-  // -------------------------
-  // Boot intro sequence
-  // -------------------------
   useEffect(() => {
     if (mode !== "booting") return;
     let i = 0;
@@ -179,51 +167,33 @@ export default function Home() {
       }
     };
     runIntro();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [mode]);
 
-  // static flicker
   useEffect(() => {
     const flicker = setInterval(() => setStaticOn((p) => !p), 200);
     return () => clearInterval(flicker);
   }, []);
 
-  const [booting, setBooting] = React.useState(true);
-
-  React.useEffect(() => {
+  useEffect(() => {
     const timer = setTimeout(() => setBooting(false), 6000);
     return () => clearTimeout(timer);
   }, []);
 
-
-  // -------------------------
-  // QUESTION FLOW SEQUENCE
-  // When currentQuestion changes (and hasStarted), type the question into questionText.
-  // Only after that typing completes do we set a questioning mode and set startTime.
-  // -------------------------
   const currentQuestion = questions[currentQuestionIndex];
 
   useEffect(() => {
     if (!hasStarted || !currentQuestion) return;
-
-    // clear prior messages and question space, then type the new question
     setDisplayText("");
     setQuestionText("");
-    // type question into questionText
     typeText(currentQuestion.question, "question", () => {
-      // after question is typed, set mode that enables answers
       if (currentQuestion.type === "multiple") setMode("questioningMultiple");
       else if (currentQuestion.type === "torf") setMode("questioningTorF");
       else if (currentQuestion.type === "yesno") setMode("questioningNormal");
       else setMode("questioningMultiple");
       setStartTime(Date.now());
     });
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [currentQuestionIndex, hasStarted, currentQuestion]);
 
-  // -------------------------
-  // handleStart (explicit)
-  // -------------------------
   const handleStart = () => {
     if (questions.length === 0) {
       typeText(" No questions loaded yet.", "message");
@@ -232,77 +202,48 @@ export default function Home() {
     setHasStarted(true);
     setCurrentQuestionIndex(0);
     setMode("talking");
-    typeText(" Let's begin your assessment...", "message", () => {
-      // question effect will pick up and type the first question
-    });
+    typeText(" Let's begin your assessment...", "message");
   };
 
-  // -------------------------
-  // handleAnswer: record time, show processing message (typed), then move to next question or results
-  // This uses separate displayText for processing so it doesn't overwrite typed questionText unexpectedly.
-  // -------------------------
   const handleAnswer = (answer) => {
     if (!currentQuestion) return;
-
     const endTime = Date.now();
     const timeTaken = startTime ? (endTime - startTime) / 1000 : 0;
-    // update answerTimes immediately
     setAnswerTimes((prev) => [...prev, timeTaken]);
-
     setSelectedAnswer(answer);
-
     if (answer === currentQuestion.answer) {
       setCorrectedAnswers((prev) => prev + 1);
     }
-
-    // disable options and type the processing message
     setMode("talking");
     typeText(" Processing your response...", "message", () => {
-      // after processing message typed, clear it and advance
       setDisplayText("");
-
       if (currentQuestionIndex < questions.length - 1) {
         setCurrentQuestionIndex((prev) => prev + 1);
         setSelectedAnswer(null);
-        // next question will be typed by effect above
       } else {
-        // compute average using the answerTimes state snapshot
-        // (we pushed current time above with setAnswerTimes; small timing nuance but acceptable)
-        // create a snapshot by combining answerTimes + timeTaken to be safer
         const snapshot = [...answerTimes, timeTaken];
         const totalTime = snapshot.reduce((a, b) => a + b, 0);
         const averageTime = snapshot.length ? totalTime / snapshot.length : 0;
-
-        // final message typed
-        typeText(
-          ` Assessment complete. Well done!
-            Average time per question: ${averageTime.toFixed(2)}s`,
-          "message",
-          () => {
-            setMode("idle");
-            setCurrentQuestionIndex(0);
-            setCorrectedAnswers(0);
-            setHasStarted(false);
-            setAnswerTimes([]);
-            setTestFinished(true);
-            setTestStarted(false);
-          }
-        );
+        typeText(` Assessment complete. Well done! Average time per question: ${averageTime.toFixed(2)}s`, "message", () => {
+          setMode("idle");
+          setCurrentQuestionIndex(0);
+          setCorrectedAnswers(0);
+          setHasStarted(false);
+          setAnswerTimes([]);
+          setTestFinished(true);
+          setTestStarted(false);
+        });
       }
     });
   };
 
   const handleSendMessage = (msg) => {
     const lowerMsg = msg.toLowerCase().trim();
-
-    // Get response from JSON DB
     const botReply = chatResponses[lowerMsg] || "I'm not sure how to respond to that yet.";
-
-    // Update message history
     setMessages((prev) => [
       ...prev,
       { sender: "user", text: msg },
-      { sender: "bot", text: botReply }
+      { sender: "bot", text: botReply },
     ]);
   };
 
@@ -323,6 +264,47 @@ export default function Home() {
     }
   };
 
+  // Skeleton loader — only shows if network or assets take too long to load
+  const [slowLoading, setSlowLoading] = useState(false);
+
+  // detect slow internet or delayed loading
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      // if the page still hasn't finished loading after 2.5s, show skeleton
+      if (document.readyState !== "complete") {
+        setSlowLoading(true);
+      }
+    }, 2500);
+
+    // once page fully loads, hide skeleton
+    const handleLoad = () => {
+      clearTimeout(timer);
+      setSlowLoading(false);
+    };
+    window.addEventListener("load", handleLoad);
+
+    return () => {
+      clearTimeout(timer);
+      window.removeEventListener("load", handleLoad);
+    };
+  }, []);
+
+  if (slowLoading) {
+    return (
+      <div className="w-full h-screen flex flex-col items-center justify-center bg-black text-purple-300">
+        <div className="animate-pulse flex flex-col items-center">
+          <div className="w-40 h-40 bg-purple-800/30 rounded-full mb-6" />
+          <p className="text-lg font-mono tracking-wide mb-2">
+            Booting System...
+          </p>
+          <p className="text-sm text-purple-500">
+            Detecting network latency...
+          </p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="relative w-full h-screen flex items-center justify-center overflow-hidden ">
       {/* Background */}
@@ -333,7 +315,6 @@ export default function Home() {
         style={{ backgroundImage: `url('/images/bkg4.png')` }}
       />
 
-      {/* Foreground Image */}
       <Image
         src="/images/screenMain1NoBkgWChat.png"
         alt="Main Computer Interface"
@@ -344,7 +325,7 @@ export default function Home() {
           ${mode === "colorblind" ? "filter-colorblind" : ""}`}
       />
 
-      {/* --- MAIN SCREEN (RESTORED POSITION) --- */}
+      {/* --- MAIN SCREEN --- */}
       <div className="absolute w-[25%] h-[40%] top-[16%] left-[37%] z-10 bg-black/80 rounded-sm text-center flex flex-col items-center justify-center p-4 overflow-hidden">
         <ComputerScreen
           getFaceSrc={getFaceSrc}
@@ -363,10 +344,9 @@ export default function Home() {
         />
       </div>
 
-      {/* Skill selection dialog */}
+      {/* --- SKILL SELECTION DIALOG --- */}
       <DialogScreen show={showSkillTree}>
         <h2 className="text-xl font-semibold mb-4 text-white tracking-wide">Select up to 3 Subjects</h2>
-
         <div className="grid grid-cols-2 gap-3">
           {subjectsFromData.map((subj) => (
             <button
@@ -383,9 +363,7 @@ export default function Home() {
             </button>
           ))}
         </div>
-
         <p className="mt-3 text-sm text-gray-400 tracking-wide">{chosenSubjects.length}/3 selected</p>
-
         <button
           onClick={handleConfirmSubjects}
           disabled={chosenSubjects.length < 1}
@@ -396,9 +374,7 @@ export default function Home() {
         </button>
       </DialogScreen>
 
-
-
-      {/* --- TOP LEFT (DATE/TIME) --- */}
+      {/* --- TOP LEFT (TIME) --- */}
       <div className="absolute w-[17%] h-[22%] top-[12%] left-[16%] bg-black/70 rounded-sm flex flex-col items-center justify-center text-white text-xs">
         <TimeAndDate />
       </div>
@@ -421,65 +397,60 @@ export default function Home() {
       </div>
 
       {/* --- BOTTOM RIGHT (SYSTEM INFO) --- */}
-        <div className="absolute w-[12%] h-[20%] top-[43%] right-[18%] bg-black/70 rounded-sm flex flex-col gap-1 items-center justify-center text-white text-xs">
-          <SystemInfo
-            hasStarted={hasStarted}
-            currentQuestionIndex={currentQuestionIndex}
-            questions={questions}
-            mode={
-              booting
-                ? "booting"
-                : chatStarted
-                ? "chatting"
-                : hasStarted
-                ? "testing"
-                : "idle"
+      <div className="absolute w-[12%] h-[20%] top-[43%] right-[18%] bg-black/70 rounded-sm flex flex-col gap-1 items-center justify-center text-white text-xs">
+        <SystemInfo
+          hasStarted={hasStarted}
+          currentQuestionIndex={currentQuestionIndex}
+          questions={questions}
+          mode={
+            booting
+              ? "booting"
+              : chatStarted
+              ? "chatting"
+              : hasStarted
+              ? "testing"
+              : "idle"
+          }
+        />
+
+        <button
+          onClick={() => setShowSkillTree(true)}
+          disabled={booting || (testStarted && !testFinished) || chatStarted}
+          className={`px-2 py-1 text-xs rounded-md font-medium text-white transition-all border cursor-pointer ${
+            booting || (testStarted && !testFinished) || chatStarted
+              ? "bg-gray-800 border-gray-700 text-gray-500 cursor-not-allowed"
+              : "bg-purple-800 border-purple-500 hover:bg-purple-700 hover:border-purple-400"
+          }`}
+        >
+          Open Skill Tree
+        </button>
+
+        <button
+          onClick={() => {
+            if (testStarted && !testFinished) {
+              alert("You cannot start the chatbot during test mode.");
+              return;
             }
-          />
+            setChatStarted((prev) => !prev);
+          }}
+          disabled={booting || (testStarted && !testFinished)}
+          className={`px-2 py-1 text-xs rounded-md font-medium text-white transition-all border cursor-pointer ${
+            booting || (testStarted && !testFinished)
+              ? "bg-gray-800 border-gray-700 text-gray-500 cursor-not-allowed"
+              : chatStarted
+              ? "bg-pink-800 border-pink-500 hover:bg-pink-700 hover:border-pink-400"
+              : "bg-purple-800 border-purple-500 hover:bg-purple-700 hover:border-purple-400"
+          }`}
+        >
+          {chatStarted ? "End Chatbot" : "Start Chatbot"}
+        </button>
+      </div>
 
-          {/* --- Skill Tree Button --- */}
-          <button
-            onClick={() => setShowSkillTree(true)}
-            disabled={booting || (testStarted && !testFinished) || chatStarted}
-            className={`px-2 py-1 text-xs rounded-md font-medium text-white transition-all border cursor-pointer ${
-              booting || (testStarted && !testFinished) || chatStarted
-                ? "bg-gray-800 border-gray-700 text-gray-500 cursor-not-allowed"
-                : "bg-purple-800 border-purple-500 hover:bg-purple-700 hover:border-purple-400"
-            }`}
-          >
-            Open Skill Tree
-          </button>
-
-          {/* --- Chatbot Button --- */}
-          <button
-            onClick={() => {
-              if (testStarted && !testFinished) {
-                alert("You cannot start the chatbot during test mode.");
-                return;
-              }
-              setChatStarted((prev) => !prev);
-            }}
-            disabled={booting || (testStarted && !testFinished)}
-            className={`px-2 py-1 text-xs rounded-md font-medium text-white transition-all border cursor-pointer ${
-              booting || (testStarted && !testFinished)
-                ? "bg-gray-800 border-gray-700 text-gray-500 cursor-not-allowed"
-                : chatStarted
-                ? "bg-pink-800 border-pink-500 hover:bg-pink-700 hover:border-pink-400"
-                : "bg-purple-800 border-purple-500 hover:bg-purple-700 hover:border-purple-400"
-            }`}
-          >
-            {chatStarted ? "End Chatbot" : "Start Chatbot"}
-          </button>
-        </div>
-
-
-
-      {/* --- CENTER DOWN (CHAT) --- */}
+      {/* --- CHAT INPUT --- */}
       <div className="absolute w-[35%] h-[10%] top-[75%] bg-black/70 rounded-sm flex items-center justify-center text-white text-xs">
         <form
           onSubmit={(e) => {
             e.preventDefault();
-            // don't submit if chat isn't active
             if (!chatStarted) return;
             const input = e.target.elements.chatInput;
             const value = input.value.trim();
@@ -504,16 +475,16 @@ export default function Home() {
             aria-disabled={!chatStarted}
             title={chatStarted ? "Send message" : "Chat disabled"}
             className={`px-3 py-1 rounded-md text-xs font-semibold transition-all border
-              ${chatStarted
-                ? "bg-purple-700 hover:bg-purple-600 border-purple-400 text-white"
-                : "bg-gray-800 border-gray-700 text-gray-500 cursor-not-allowed"}`}
+              ${
+                chatStarted
+                  ? "bg-purple-700 hover:bg-purple-600 border-purple-400 text-white"
+                  : "bg-gray-800 border-gray-700 text-gray-500 cursor-not-allowed"
+              }`}
           >
             Send
           </button>
         </form>
       </div>
-
-
     </div>
   );
 }

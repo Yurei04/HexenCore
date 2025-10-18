@@ -36,7 +36,7 @@ export default function ComputerControls({
 
       {/* Buttons */}
       {[
-        { label: "Sleep", mode: "sleepy", msg: " Entering Low-Power Mode..." },
+        { label: "Night", mode: "sleepy", msg: " Entering Low-Power Mode..." },
         {
           label: "Color Blind",
           mode: "colorblind",
