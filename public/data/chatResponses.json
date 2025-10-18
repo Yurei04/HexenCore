@@ -2,9 +2,39 @@
   "hello": "Hello there! How can I assist you today?",
   "hi": "Hi! Nice to see you again. What would you like to talk about?",
   "how are you": "I'm just a bunch of code, but I'm running smoothly!",
-  "who are you": "I’m Hex, your onboard AI assistant.",
+  "who are you": "I’m Sumire, your onboard AI assistant.",
   "what can you do": "I can answer your questions, give guidance, and assist with tests or tasks inside this system.",
   "start test": "Initializing test sequence... Please wait.",
   "thank you": "You're very welcome!",
-  "bye": "Goodbye! Shutting down chat protocols."
+  "bye": "Goodbye! Shutting down chat protocols.",
+
+  "--- MATH ---": "",
+  "what is pi": "Pi is approximately 3.14159 — it represents the ratio of a circle’s circumference to its diameter.",
+  "who discovered pi": "Pi was known to ancient civilizations, but Archimedes of Syracuse was among the first to calculate it precisely.",
+  "what is pythagorean theorem": "It states that in a right triangle, the square of the hypotenuse equals the sum of the squares of the other two sides.",
+  "what is derivative": "A derivative measures how a function changes as its input changes — in short, it’s the slope of a curve at a point.",
+
+  "--- SCIENCE ---": "",
+  "what is photosynthesis": "Photosynthesis is the process where plants use sunlight, water, and carbon dioxide to create oxygen and glucose.",
+  "what is gravity": "Gravity is a natural force that attracts two bodies toward each other — it keeps planets in orbit and our feet on the ground.",
+  "who is newton": "Sir Isaac Newton was an English scientist who formulated the laws of motion and universal gravitation.",
+  "what is atom": "An atom is the smallest unit of matter that retains the properties of an element — made of protons, neutrons, and electrons.",
+
+  "--- HISTORY ---": "",
+  "who discovered america": "Christopher Columbus reached the Americas in 1492, though indigenous peoples had been living there for thousands of years.",
+  "what started world war 1": "World War I began after the assassination of Archduke Franz Ferdinand in 1914, leading to a chain of military alliances activating.",
+  "what is the renaissance": "The Renaissance was a period of cultural, artistic, and scientific rebirth in Europe during the 14th–17th centuries.",
+  "who was napoleon": "Napoleon Bonaparte was a French military leader who became Emperor and expanded French influence across Europe.",
+
+  "--- ENGLISH ---": "",
+  "what is a noun": "A noun is a word that names a person, place, thing, or idea.",
+  "what is a verb": "A verb describes an action, state, or occurrence — like run, exist, or think.",
+  "what is a metaphor": "A metaphor compares two unrelated things without using 'like' or 'as' — for example, 'Time is a thief.'",
+  "what is an adjective": "An adjective is a word that describes or modifies a noun — like 'bright,' 'tall,' or 'quick.'",
+
+  "--- TECHNOLOGY ---": "",
+  "what is ai": "Artificial Intelligence (AI) refers to machines designed to perform tasks that normally require human intelligence.",
+  "what is programming": "Programming is the process of creating instructions that tell a computer how to perform specific tasks.",
+  "what is binary": "Binary is the fundamental language of computers — made of 0s and 1s to represent on and off electrical states.",
+  "what is the internet": "The Internet is a global network that connects millions of computers for communication, data sharing, and access to information."
 }
