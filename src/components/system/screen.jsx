@@ -2,6 +2,7 @@
 
 import Image from "next/image";
 import { motion, AnimatePresence } from "framer-motion";
+import { useState, useEffect } from "react";
 
 export default function ComputerScreen({
   getFaceSrc,
@@ -17,20 +18,109 @@ export default function ComputerScreen({
   messages,
   chatStarted
 }) {
+  // 🧠 Memory Log
+  const [logs, setLogs] = useState([]);
+  const [showLogs, setShowLogs] = useState(false);
+
+  useEffect(() => {
+    if (currentQuestion && selectedAnswer) {
+      setLogs((prev) => [
+        ...prev,
+        {
+          question: currentQuestion.question,
+          answer: selectedAnswer,
+          correct:
+            currentQuestion.correctAnswer &&
+            selectedAnswer === currentQuestion.correctAnswer,
+          time: new Date().toLocaleTimeString(),
+        },
+      ]);
+    }
+  }, [selectedAnswer]);
+
+  useEffect(() => {
+    const box = document.getElementById("displayTextBox");
+      if (box) box.scrollTop = box.scrollHeight;
+    }, [displayText]);
+
   return (
-    <div className="flex flex-col items-center text-center w-full h-full relative bg-gradient-to-b from-[#0a0013] via-[#140025] to-[#1b0036] p-4 rounded-2xl shadow-[0_0_25px_#a855f7] border border-pink-500/30 overflow-hidden">
+    <div
+      className={`flex flex-col items-center text-center w-full h-full relative bg-gradient-to-b from-[#0a0013] via-[#140025] to-[#1b0036] p-4 rounded-2xl shadow-[0_0_25px_#a855f7] border border-pink-500/30 overflow-hidden ${
+        showLogs ? "pointer-events-none" : ""
+      }`}
+    >
       {/* Techy glow grid background */}
       <div className="absolute inset-0 opacity-10 bg-[radial-gradient(circle_at_center,rgba(236,72,153,0.3)_0,transparent_70%)]" />
       <div className="absolute inset-0 bg-[linear-gradient(45deg,rgba(168,85,247,0.2)_1px,transparent_1px),linear-gradient(-45deg,rgba(236,72,153,0.2)_1px,transparent_1px)] bg-[size:40px_40px]" />
 
+      {/* 🧠 Toggle Button (still clickable even when overlay active) */}
+      <button
+        onClick={() => setShowLogs(!showLogs)}
+        className="absolute top-3 right-3 z-[9999] px-3 py-1 bg-pink-600/30 hover:bg-pink-600/60 border border-pink-400/50 text-pink-200 rounded-md text-xs font-mono shadow-[0_0_10px_#ec4899] pointer-events-auto"
+      >
+        {showLogs ? "Close Log" : "View Log"}
+      </button>
+
+      {/* 🧠 Overlay for Memory Log */}
+      <AnimatePresence>
+        {showLogs && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 0.3 }}
+            className="absolute inset-0 z-[9998] bg-black/80 backdrop-blur-md flex flex-col items-center justify-center text-left p-4 pointer-events-auto"
+          >
+            <motion.div
+              initial={{ scale: 0.9, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              transition={{ duration: 0.3 }}
+              className="bg-gradient-to-b from-[#1b0036] to-[#0a0013] border border-pink-500/40 rounded-xl shadow-[0_0_25px_#ec4899] w-[80%] max-w-2xl h-[70%] p-4 overflow-y-auto font-mono text-pink-200"
+            >
+              <h2 className="text-xl font-bold text-pink-400 mb-3">
+                🧠 Memory Log / Transcript
+              </h2>
+              {logs.length === 0 ? (
+                <p className="text-pink-300/70">No logs recorded yet...</p>
+              ) : (
+                logs.map((log, idx) => (
+                  <div
+                    key={idx}
+                    className="mb-3 border-b border-pink-400/20 pb-2"
+                  >
+                    <p className="text-purple-300 text-sm">
+                      <strong>Q{idx + 1}:</strong> {log.question}
+                    </p>
+                    <p>
+                      ➤ Answer:{" "}
+                      <span
+                        className={`${
+                          log.correct ? "text-green-400" : "text-red-400"
+                        }`}
+                      >
+                        {log.answer}
+                      </span>
+                    </p>
+                    <p className="text-[11px] text-pink-300/60">🕓 {log.time}</p>
+                  </div>
+                ))
+              )}
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* 💬 Chat Mode */}
       {chatStarted ? (
-        // 💬 Chat Mode
         <div className="flex flex-col justify-end w-full h-full overflow-y-auto text-left space-y-2 z-10">
           <div className="flex flex-col-reverse overflow-y-auto h-full scrollbar-thin scrollbar-thumb-purple-600 scrollbar-track-transparent px-2">
             {[...messages].reverse().map((msg, idx) => (
               <div
                 key={idx}
-                className={`my-1 flex ${msg.sender === "user" ? "justify-end" : "justify-start"}`}
+                className={`my-1 flex ${
+                  msg.sender === "user" ? "justify-end" : "justify-start"
+                }`}
               >
                 <div
                   className={`max-w-[80%] px-3 py-2 rounded-lg text-sm ${
@@ -71,8 +161,15 @@ export default function ComputerScreen({
             animate={{ opacity: 1 }}
             className="text-pink-300 text-sm font-mono min-h-[50px] max-w-[90%] leading-relaxed tracking-wide z-10"
           >
-            <span className="drop-shadow-[0_0_6px_#f472b6]">{displayText}</span>
-            {isTyping && <span className="animate-pulse text-purple-400 ml-1">▌</span>}
+            <div
+            id="displayTextBox"
+            className="drop-shadow-[0_0_6px_#f472b6] text-pink-400 text-xs font-mono whitespace-pre-wrap overflow-y-auto max-h-[160px] pr-2 leading-relaxed scrollbar-thin scrollbar-thumb-pink-700 scrollbar-track-transparent"
+          >
+            {displayText || " "}{isTyping && (
+              <span className="animate-pulse text-purple-400 ml-1">▌</span>
+            )}
+          </div>
+            
           </motion.div>
 
           {/* ❓ Question Section */}
@@ -162,5 +259,4 @@ export default function ComputerScreen({
       )}
     </div>
   );
-
 }

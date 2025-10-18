@@ -37,6 +37,9 @@ export default function Home() {
 
   const [chatStarted, setChatStarted] = useState(false);
   const [messages, setMessages] = useState([]);
+  const [logs, setLogs] = useState([]);
+  const [showLogs, setShowLogs] = useState(false);
+
 
   const [booting, setBooting] = React.useState(true);
 
@@ -140,7 +143,7 @@ export default function Home() {
     if (chosenSubjects.length < 1) {
       typeText(" Please select at least one subject.", "message");
       return;
-    }
+  }
 
     const selectedQuestions = chosenSubjects.flatMap((subj) => {
       const subjectQs = allSubjects[subj] || [];
@@ -220,35 +223,66 @@ export default function Home() {
 
   const handleAnswer = (answer) => {
     if (!currentQuestion) return;
+
     const endTime = Date.now();
     const timeTaken = startTime ? (endTime - startTime) / 1000 : 0;
+
     setAnswerTimes((prev) => [...prev, timeTaken]);
     setSelectedAnswer(answer);
+
     if (answer === currentQuestion.answer) {
       setCorrectedAnswers((prev) => prev + 1);
     }
+
     setMode("talking");
     typeText(" Processing your response...", "message", () => {
       setDisplayText("");
+
       if (currentQuestionIndex < questions.length - 1) {
+        // Move to next question
         setCurrentQuestionIndex((prev) => prev + 1);
         setSelectedAnswer(null);
       } else {
+        // ----- FINAL EVALUATION -----
         const snapshot = [...answerTimes, timeTaken];
         const totalTime = snapshot.reduce((a, b) => a + b, 0);
         const averageTime = snapshot.length ? totalTime / snapshot.length : 0;
-        typeText(` Assessment complete. Well done! Average time per question: ${averageTime.toFixed(2)}s`, "message", () => {
-          setMode("idle");
-          setCurrentQuestionIndex(0);
-          setCorrectedAnswers(0);
-          setHasStarted(false);
-          setAnswerTimes([]);
-          setTestFinished(true);
-          setTestStarted(false);
-        });
+
+        // Take current correct answers + this one (since it's async)
+        const finalCorrect = selectedAnswer === currentQuestion.answer
+          ? correctAnswers + 1
+          : correctAnswers;
+
+        // Simple evaluation logic
+        let evaluation = "";
+        if (finalCorrect >= questions.length * 0.8 && averageTime <= 10) {
+          evaluation = " Outstanding performance — fast and accurate!";
+        } else if (finalCorrect >= questions.length * 0.6) {
+          evaluation = " Good job — solid understanding, but room to improve speed or accuracy.";
+        } else {
+          evaluation = " Needs improvement — consider reviewing the material.";
+        }
+
+        // Display final message
+        typeText(
+          ` Assessment complete. Well done!
+            \nCorrect Answers: ${finalCorrect}/${questions.length}
+            \nAverage Time per Question: ${averageTime.toFixed(2)}s
+            \nEvaluation: ${evaluation}`,
+          "message",
+          () => {
+            setCurrentQuestionIndex(0);
+            setCorrectedAnswers(0);
+            setHasStarted(false);
+            setAnswerTimes([]);
+            setTestFinished(true);
+            setTestStarted(false);
+          }
+        );
       }
     });
   };
+
 
   const handleSendMessage = (msg) => {
     const lowerMsg = msg.toLowerCase().trim();
