@@ -12,6 +12,28 @@
         "question": "Which continent is the Sahara Desert located in?",
         "options": ["Africa", "Asia", "Australia", "Europe"],
         "answer": "Africa"
+      },
+      {
+        "type": "torf",
+        "question": "Mount Everest is the tallest mountain in the world.",
+        "answer": "TRUE"
+      },
+      {
+        "type": "multiple",
+        "question": "Which ocean is the largest on Earth?",
+        "options": ["Atlantic Ocean", "Pacific Ocean", "Indian Ocean", "Arctic Ocean"],
+        "answer": "Pacific Ocean"
+      },
+      {
+        "type": "yesno",
+        "question": "Is the Amazon River located in Africa?",
+        "answer": "NO"
+      },
+      {
+        "type": "multiple",
+        "question": "What is the largest country by land area?",
+        "options": ["China", "United States", "Russia", "Canada"],
+        "answer": "Russia"
       }
     ],
     "Science": [
@@ -25,6 +47,28 @@
         "question": "Which planet is known as the Red Planet?",
         "options": ["Venus", "Earth", "Mars", "Jupiter"],
         "answer": "Mars"
+      },
+      {
+        "type": "multiple",
+        "question": "What gas do plants absorb from the atmosphere?",
+        "options": ["Oxygen", "Nitrogen", "Carbon Dioxide", "Hydrogen"],
+        "answer": "Carbon Dioxide"
+      },
+      {
+        "type": "torf",
+        "question": "Humans have 206 bones in their body.",
+        "answer": "TRUE"
+      },
+      {
+        "type": "multiple",
+        "question": "Which part of the cell contains genetic material?",
+        "options": ["Nucleus", "Cytoplasm", "Cell Membrane", "Mitochondria"],
+        "answer": "Nucleus"
+      },
+      {
+        "type": "yesno",
+        "question": "Do sound waves travel faster in air than in water?",
+        "answer": "NO"
       }
     ],
     "Technology": [
@@ -37,6 +81,133 @@
         "type": "torf",
         "question": "HTML stands for Hyper Trainer Markup Language.",
         "answer": "FALSE"
+      },
+      {
+        "type": "multiple",
+        "question": "What does 'CPU' stand for?",
+        "options": ["Central Processing Unit", "Computer Personal Unit", "Central Power Utility", "Core Programming Unit"],
+        "answer": "Central Processing Unit"
+      },
+      {
+        "type": "torf",
+        "question": "The first iPhone was released in 2007.",
+        "answer": "TRUE"
+      },
+      {
+        "type": "multiple",
+        "question": "Which company created the Android operating system?",
+        "options": ["Google", "Apple", "Microsoft", "Samsung"],
+        "answer": "Google"
+      },
+      {
+        "type": "yesno",
+        "question": "Is Python a programming language?",
+        "answer": "YES"
+      }
+    ],
+    "Mathematics": [
+      {
+        "type": "multiple",
+        "question": "What is the value of π (pi) to two decimal places?",
+        "options": ["3.12", "3.14", "3.15", "3.18"],
+        "answer": "3.14"
+      },
+      {
+        "type": "torf",
+        "question": "The square root of 64 is 8.",
+        "answer": "TRUE"
+      },
+      {
+        "type": "multiple",
+        "question": "What is 12 × 8?",
+        "options": ["96", "108", "88", "112"],
+        "answer": "96"
+      },
+      {
+        "type": "torf",
+        "question": "A triangle’s angles always add up to 180 degrees.",
+        "answer": "TRUE"
+      },
+      {
+        "type": "multiple",
+        "question": "What is 25% of 200?",
+        "options": ["25", "40", "50", "75"],
+        "answer": "50"
+      },
+      {
+        "type": "yesno",
+        "question": "Is zero considered an even number?",
+        "answer": "YES"
+      }
+    ],
+    "History": [
+      {
+        "type": "multiple",
+        "question": "Who was the first President of the United States?",
+        "options": ["Abraham Lincoln", "George Washington", "Thomas Jefferson", "John Adams"],
+        "answer": "George Washington"
+      },
+      {
+        "type": "yesno",
+        "question": "Did World War II end in 1945?",
+        "answer": "YES"
+      },
+      {
+        "type": "multiple",
+        "question": "The Great Wall of China was primarily built to protect against which group?",
+        "options": ["Romans", "Mongols", "Japanese", "Vikings"],
+        "answer": "Mongols"
+      },
+      {
+        "type": "torf",
+        "question": "The Roman Empire fell in 476 AD.",
+        "answer": "TRUE"
+      },
+      {
+        "type": "multiple",
+        "question": "Who was known as the 'Maid of Orléans'?",
+        "options": ["Joan of Arc", "Cleopatra", "Marie Curie", "Elizabeth I"],
+        "answer": "Joan of Arc"
+      },
+      {
+        "type": "torf",
+        "question": "The Cold War was a direct military conflict between the USA and the USSR.",
+        "answer": "FALSE"
+      }
+    ],
+    "Art & Culture": [
+      {
+        "type": "multiple",
+        "question": "Which artist painted the Mona Lisa?",
+        "options": ["Vincent van Gogh", "Pablo Picasso", "Leonardo da Vinci", "Claude Monet"],
+        "answer": "Leonardo da Vinci"
+      },
+      {
+        "type": "torf",
+        "question": "The traditional Japanese art of paper folding is called Origami.",
+        "answer": "TRUE"
+      },
+      {
+        "type": "multiple",
+        "question": "Which country is famous for flamenco music and dance?",
+        "options": ["Italy", "Spain", "Brazil", "Portugal"],
+        "answer": "Spain"
+      },
+      {
+        "type": "yesno",
+        "question": "Is ballet originally from Russia?",
+        "answer": "NO"
+      },
+      {
+        "type": "multiple",
+        "question": "Who painted 'The Starry Night'?",
+        "options": ["Leonardo da Vinci", "Vincent van Gogh", "Edvard Munch", "Rembrandt"],
+        "answer": "Vincent van Gogh"
+      },
+      {
+        "type": "torf",
+        "question": "The Louvre Museum is located in Paris, France.",
+        "answer": "TRUE"
       }
     ]
   }

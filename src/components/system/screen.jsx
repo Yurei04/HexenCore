@@ -102,7 +102,7 @@ export default function ComputerScreen({
                         className={`px-4 py-2 rounded-lg border transition-all text-sm font-semibold tracking-wide shadow-[0_0_10px_rgba(236,72,153,0.4)]
                           ${
                             selectedAnswer === opt
-                              ? " text-white border-pink-400 shadow-[0_0_20px_#ec4899]"
+                              ? "bg-gradient-to-r from-pink-600 to-purple-700 text-white border-pink-400 shadow-[0_0_20px_#ec4899]"
                               : "bg-transparent border-purple-500/40 hover:bg-purple-600/20 text-purple-200"
                           }`}
                       >
