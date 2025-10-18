@@ -26,6 +26,7 @@ export default function Home() {
   const [questions, setQuestions] = useState([]);
   const [answerTimes, setAnswerTimes] = useState([]);
   const [startTime, setStartTime] = useState(null);
+  const [tooSmall, setTooSmall] = useState(false);
 
   const [allSubjects, setAllSubjects] = useState({});
   const [chosenSubjects, setChosenSubjects] = useState([]);
@@ -96,6 +97,18 @@ export default function Home() {
       }
     }, speed);
   };
+
+  useEffect(() => {
+    const handleResize = () => {
+      const w = window.innerWidth;
+      const h = window.innerHeight;
+      // Replace 1280x720 with your expected design size
+      setTooSmall(w < 1280 || h < 720);
+    };
+    window.addEventListener("resize", handleResize);
+    handleResize();
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
 
   useEffect(() => {
     let mounted = true;
@@ -305,8 +318,17 @@ export default function Home() {
     );
   }
 
+  if (tooSmall) {
+    return (
+      <div className="fixed inset-0 bg-black flex flex-col items-center justify-center text-purple-400 text-center">
+        <p className="text-xl mb-2">⚠️ Resize Detected</p>
+        <p className="text-sm">Please use a 1920×1080 screen or fullscreen mode for best experience.</p>
+      </div>
+    );
+  }
+
   return (
-    <div className="relative w-full h-screen flex items-center justify-center overflow-hidden ">
+    <div className="w-full h-full fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex items-center justify-center overflow-hidden ">
       {/* Background */}
       <div
         className={`absolute inset-0 bg-cover bg-center transition-all duration-500
